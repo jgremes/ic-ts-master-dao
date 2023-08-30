@@ -1,0 +1,100 @@
+type Account = record { owner : principal; subaccount : opt vec nat8 };
+type ApplicantPayload = record { about : text; alias : text };
+type CompactMember = record { id : principal; alias : text };
+type Member = record {
+  id : principal;
+  about : text;
+  alias : text;
+  votes : nat;
+  createdAt : nat;
+  updatedAt : opt nat;
+};
+type PrincipalProfile = record {
+  about : text;
+  alias : text;
+  is_applicant : bool;
+  is_member : bool;
+  is_manager : bool;
+};
+type Proposal = record {
+  id : text;
+  title : text;
+  votes_no : nat;
+  createdAt : nat;
+  canister_id : text;
+  description : text;
+  voters : vec principal;
+  canister_method : text;
+  updatedAt : opt nat;
+  state : ProposalState;
+  canister_method_param : text;
+  proposer : principal;
+  votes_yes : nat;
+};
+type ProposalPayload = record {
+  title : text;
+  canister_id : text;
+  description : text;
+  canister_method : text;
+  canister_method_param : text;
+};
+type ProposalState = variant {
+  Failed : text;
+  Open;
+  Executing;
+  Rejected;
+  Succeeded;
+  Accepted;
+};
+type TransferArgs = record {
+  to : Account;
+  fee : opt nat;
+  memo : opt vec nat8;
+  from_subaccount : opt vec nat8;
+  created_at_time : opt nat64;
+  amount : nat;
+};
+type TransferError = variant {
+  GenericError : _InlineTransferErrorGenericError;
+  TemporarilyUnavailable;
+  BadBurn : _InlineTransferErrorBadBurn;
+  Duplicate : _InlineTransferErrorDuplicate;
+  BadFee : _InlineTransferErrorBadFee;
+  CreatedInFuture : _InlineTransferErrorCreatedInFuture;
+  TooOld;
+  InsufficientFunds : _InlineTransferErrorInsufficientFunds;
+};
+type TransferResult = variant { Ok : nat; Err : TransferError };
+type _AzleResult = variant { Ok : principal; Err : text };
+type _AzleResult_1 = variant { Ok : vec CompactMember; Err : text };
+type _AzleResult_2 = variant { Ok : vec Member; Err : text };
+type _AzleResult_3 = variant { Ok : text; Err : text };
+type _AzleResult_4 = variant { Ok : vec Proposal; Err : text };
+type _AzleResult_5 = variant { Ok : Proposal; Err : text };
+type _InlineTransferErrorBadBurn = record { min_burn_amount : nat };
+type _InlineTransferErrorBadFee = record { expected_fee : nat };
+type _InlineTransferErrorCreatedInFuture = record { ledger_time : nat64 };
+type _InlineTransferErrorDuplicate = record { duplicate_of : nat };
+type _InlineTransferErrorGenericError = record {
+  message : text;
+  error_code : nat;
+};
+type _InlineTransferErrorInsufficientFunds = record { balance : nat };
+service : () -> {
+  applicants_add : (ApplicantPayload) -> (_AzleResult);
+  get_members_to_transfer : () -> (_AzleResult_1) query;
+  get_principal_profile : () -> (PrincipalProfile) query;
+  icrc1_balance_of : (Account) -> (nat) query;
+  icrc1_decimals : () -> (nat8) query;
+  icrc1_fee : () -> (nat) query;
+  icrc1_minting_account : () -> (opt Account) query;
+  icrc1_name : () -> (text) query;
+  icrc1_symbol : () -> (text) query;
+  icrc1_total_supply : () -> (nat) query;
+  icrc1_transfer : (TransferArgs) -> (TransferResult);
+  members_get : () -> (_AzleResult_2) query;
+  proposals_add : (ProposalPayload) -> (_AzleResult_3);
+  proposals_get : () -> (_AzleResult_4) query;
+  proposals_vote_no : (text) -> (_AzleResult_5);
+  proposals_vote_yes : (text) -> (_AzleResult_5);
+}
